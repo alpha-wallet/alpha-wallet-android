@@ -41,7 +41,6 @@
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:layout_gravity="center"
-        android:background="@color/logo_grey"
         android:contentDescription="@string/empty"
         android:gravity="center"
         android:visibility="visible"
@@ -56,7 +55,7 @@
         android:background="@color/transparent"
         android:contentDescription="@string/empty"
         android:gravity="center"
-        android:src="@drawable/ropsten_logo"
+        android:src="@drawable/ic_token_eth"
         android:visibility="visible"
         app:layout_constraintEnd_toStartOf="@id/guidelineInnerRight"
         app:layout_constraintBottom_toTopOf="@id/guidelineInnerBottom" />
