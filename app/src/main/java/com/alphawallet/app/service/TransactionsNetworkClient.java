@@ -51,6 +51,9 @@ import static com.alphawallet.app.repository.EthereumNetworkBase.COVALENT;
 import static com.alphawallet.app.repository.TokenRepository.getWeb3jService;
 import static com.alphawallet.app.repository.TokensRealmSource.databaseKey;
 import static com.alphawallet.ethereum.EthereumNetworkBase.MAINNET_ID;
+import static com.alphawallet.ethereum.EthereumNetworkBase.MATIC_ID;
+import static com.alphawallet.ethereum.EthereumNetworkBase.MATIC_TEST_ID;
+import static com.alphawallet.ethereum.EthereumNetworkBase.RINKEBY_ID;
 
 public class TransactionsNetworkClient implements TransactionsNetworkClientType
 {
@@ -62,7 +65,7 @@ public class TransactionsNetworkClient implements TransactionsNetworkClientType
     private final String BLOCK_ENTRY = "-erc20blockCheck-";
     private final String ERC20_QUERY = "tokentx";
     private final String ERC721_QUERY = "tokennfttx";
-    private final int AUX_DATABASE_ID = 15; //increment this to do a one off refresh the AUX database, in case of changed design etc
+    private final int AUX_DATABASE_ID = 19; //increment this to do a one off refresh the AUX database, in case of changed design etc (16)
     private final String DB_RESET = BLOCK_ENTRY + AUX_DATABASE_ID;
     private final String ETHERSCAN_API_KEY = "&apikey=6U31FTHW3YYHKW6CYHKKGDPHI9HEJ9PU5F";
 
@@ -469,6 +472,10 @@ public class TransactionsNetworkClient implements TransactionsNetworkClientType
         return Single.fromCallable(() -> {
             //get latest block read
             int eventCount = 0;
+            if (networkInfo.chainId == RINKEBY_ID)
+            {
+                System.out.println("YOLESS");
+            }
             try (Realm instance = realmManager.getRealmInstance(new Wallet(walletAddress)))
             {
                 //get last tokencheck
@@ -593,7 +600,7 @@ public class TransactionsNetworkClient implements TransactionsNetworkClientType
 
         if (additions.size() > 0 || removals.size() > 0)
         {
-            if (token.tokenInfo.chainId == MAINNET_ID) { svs.stopOpenseaCheck(); } //prevent simultaneous checking
+            svs.stopOpenseaCheck(token.tokenInfo.chainId); //prevent simultaneous checking
             svs.updateAssets(token, additions, removals);
         }
     }

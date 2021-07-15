@@ -5,6 +5,7 @@ import android.text.format.DateUtils;
 import com.alphawallet.app.BuildConfig;
 import com.alphawallet.app.C;
 import com.alphawallet.app.entity.GasPriceSpread;
+import com.alphawallet.app.entity.GasSettings;
 import com.alphawallet.app.entity.Wallet;
 import com.alphawallet.app.entity.tokens.Token;
 import com.alphawallet.app.repository.EthereumNetworkRepository;
@@ -269,6 +270,13 @@ public class GasService2 implements ContractGasProvider
 
         return networkRepository.getLastTransactionNonce(web3j, wallet.address)
                 .flatMap(nonce -> ethEstimateGas(wallet.address, nonce, getGasPrice(), getGasLimit(), toAddress, amount, finalTxData));
+    }
+
+    public GasSettings getERC875TransferGasLimit()
+    {
+        BigInteger gasLimit = new BigInteger(C.DEFAULT_GAS_LIMIT_FOR_NONFUNGIBLE_TOKENS);
+        BigInteger gasPrice = getGasPrice();
+        return new GasSettings(gasPrice, gasLimit);
     }
 
     private Single<EthEstimateGas> ethEstimateGas(String fromAddress, BigInteger nonce, BigInteger gasPrice,
