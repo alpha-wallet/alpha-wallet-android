@@ -4,6 +4,7 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.KeyguardManager;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Build;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
@@ -15,6 +16,7 @@ import android.security.keystore.UserNotAuthenticatedException;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.RequiresApi;
 
 import com.alphawallet.app.BuildConfig;
@@ -29,6 +31,7 @@ import com.alphawallet.app.entity.ServiceErrorException;
 import com.alphawallet.app.entity.SignAuthenticationCallback;
 import com.alphawallet.app.entity.Wallet;
 import com.alphawallet.app.entity.WalletType;
+import com.alphawallet.app.entity.cryptokeys.KeyEncodingType;
 import com.alphawallet.app.entity.cryptokeys.KeyServiceException;
 import com.alphawallet.app.entity.cryptokeys.SignatureFromKey;
 import com.alphawallet.app.entity.cryptokeys.SignatureReturnType;
@@ -222,7 +225,7 @@ public class KeyService implements AuthenticationCallback, PinAuthenticationCall
         //cursory check for valid key import
         if (!HDWallet.isValid(seedPhrase))
         {
-            callback.WalletValidated(null, AuthenticationLevel.NOT_SET);
+            callback.walletValidated(null, KeyEncodingType.SEED_PHRASE_KEY, AuthenticationLevel.NOT_SET);
         }
         else
         {
@@ -444,52 +447,6 @@ public class KeyService implements AuthenticationCallback, PinAuthenticationCall
         signDialog.close();
     }
 
-    /*********************************
-     * Internal Functions
-     */
-
-    private void getAuthenticationForSignature()
-    {
-        //check unlock status
-        try
-        {
-            KeyStore keyStore = KeyStore.getInstance(ANDROID_KEY_STORE);
-            keyStore.load(null);
-            String matchingAddr = findMatchingAddrInKeyStore(currentWallet.address);
-            SecretKey secretKey = (SecretKey) keyStore.getKey(matchingAddr, null);
-            String encryptedHDKeyPath = getFilePath(context, matchingAddr);
-            if (!new File(encryptedHDKeyPath).exists() || secretKey == null)
-            {
-                signCallback.gotAuthorisation(false);
-                return;
-            }
-            byte[] iv = readBytesFromFile(getFilePath(context, matchingAddr + "iv"));
-            Cipher outCipher = Cipher.getInstance(CIPHER_ALGORITHM);
-            final GCMParameterSpec spec = new GCMParameterSpec(128, iv);
-            outCipher.init(Cipher.DECRYPT_MODE, secretKey, spec);
-            signCallback.gotAuthorisation(true);
-            return;
-        }
-        catch (UserNotAuthenticatedException e)
-        {
-            checkAuthentication(Operation.CHECK_AUTHENTICATION);
-            return;
-        }
-        catch (KeyPermanentlyInvalidatedException | UnrecoverableKeyException e)
-        {
-            //see if we can automatically recover the key
-            keyFailure("Key created at different security level. Please re-import key");
-            e.printStackTrace();
-        }
-        catch (Exception e)
-        {
-            //some other error, will exit the recursion with bad
-            e.printStackTrace();
-        }
-
-        signCallback.gotAuthorisation(false);
-    }
-
     private synchronized String unpackMnemonic() throws KeyServiceException, UserNotAuthenticatedException
     {
         try
@@ -568,14 +525,9 @@ public class KeyService implements AuthenticationCallback, PinAuthenticationCall
             HDWallet newWallet = new HDWallet(seedPhrase, "");
             boolean success = storeHDKey(newWallet, true);
             String reportAddress = success ? currentWallet.address : null;
-            importCallback.WalletValidated(reportAddress, authLevel);
+            importCallback.walletValidated(reportAddress, KeyEncodingType.SEED_PHRASE_KEY, authLevel);
         }
-        catch (UserNotAuthenticatedException e)
-        {
-            //Should not get this. Authentication has already been requested and key should not be auth-locked at this stage
-            checkAuthentication(IMPORT_HD_KEY);
-        }
-        catch (KeyServiceException e)
+        catch (UserNotAuthenticatedException | KeyServiceException e)
         {
             keyFailure(e.getMessage());
         }
@@ -864,10 +816,6 @@ public class KeyService implements AuthenticationCallback, PinAuthenticationCall
                 {
                     callbackInterface.fetchMnemonic(unpackMnemonic());
                 }
-                catch (UserNotAuthenticatedException e)
-                {
-                    checkAuthentication(FETCH_MNEMONIC);
-                }
                 catch (Exception e)
                 {
                     keyFailure(e.getMessage());
@@ -1081,10 +1029,10 @@ public class KeyService implements AuthenticationCallback, PinAuthenticationCall
             switch (operation)
             {
                 case CREATE_KEYSTORE_KEY:
-                    importCallback.KeystoreValidated(new String(newPassword), authLevel);
+                    importCallback.walletValidated(new String(newPassword), KeyEncodingType.KEYSTORE_KEY, authLevel);
                     break;
                 case CREATE_PRIVATE_KEY:
-                    importCallback.KeyValidated(new String(newPassword), authLevel);
+                    importCallback.walletValidated(new String(newPassword), KeyEncodingType.RAW_HEX_KEY, authLevel);
                     break;
             }
         }

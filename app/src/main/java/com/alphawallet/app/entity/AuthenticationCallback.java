@@ -1,5 +1,9 @@
 package com.alphawallet.app.entity;
 
+import android.content.Intent;
+
+import androidx.activity.result.ActivityResultLauncher;
+
 /**
  * Created by James on 9/06/2019.
  * Stormbird in Sydney

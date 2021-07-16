@@ -27,6 +27,7 @@ import com.alphawallet.app.entity.NetworkInfo;
 import com.alphawallet.app.entity.Operation;
 import com.alphawallet.app.entity.QRResult;
 import com.alphawallet.app.entity.Wallet;
+import com.alphawallet.app.entity.cryptokeys.KeyEncodingType;
 import com.alphawallet.app.repository.EthereumNetworkBase;
 import com.alphawallet.app.service.KeyService;
 import com.alphawallet.app.ui.widget.OnImportKeystoreListener;
@@ -345,30 +346,48 @@ public class ImportWalletActivity extends BaseActivity implements OnImportSeedLi
     }
 
     @Override
-    public void WalletValidated(String address, KeyService.AuthenticationLevel level)
+    public void walletValidated(String data, KeyEncodingType type, KeyService.AuthenticationLevel level)
     {
-        if (address == null)
+        if (data == null)
         {
             onProgress(false);
             keyImportError(getString(R.string.import_error));
         }
-        else importWalletViewModel.onSeed(address, level);
+        else
+        {
+            switch (type)
+            {
+                case SEED_PHRASE_KEY:
+                    importWalletViewModel.onSeed(data, level);
+                    break;
+                case KEYSTORE_KEY:
+                    ImportKeystoreFragment importKeystoreFragment = (ImportKeystoreFragment) pages.get(ImportType.KEYSTORE_FORM_INDEX.ordinal()).second;
+                    importWalletViewModel.onKeystore(importKeystoreFragment.getKeystore(), importKeystoreFragment.getPassword(), data, level);
+                    break;
+                case RAW_HEX_KEY:
+                    ImportPrivateKeyFragment importPrivateKeyFragment = (ImportPrivateKeyFragment) pages.get(ImportType.PRIVATE_KEY_FORM_INDEX.ordinal()).second;
+                    importWalletViewModel.onPrivateKey(importPrivateKeyFragment.getPrivateKey(), data, level);
+                    break;
+            }
+        }
     }
 
     @Override
-    public void KeystoreValidated(String newPassword, KeyService.AuthenticationLevel level)
-    {
-        ImportKeystoreFragment importKeystoreFragment = (ImportKeystoreFragment) pages.get(ImportType.KEYSTORE_FORM_INDEX.ordinal()).second;
-        if (importKeystoreFragment == null || newPassword == null) keyImportError(getString(R.string.import_error));
-        else importWalletViewModel.onKeystore(importKeystoreFragment.getKeystore(), importKeystoreFragment.getPassword(), newPassword, level);
-    }
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
 
-    @Override
-    public void KeyValidated(String newPassword, KeyService.AuthenticationLevel level)
-    {
-        ImportPrivateKeyFragment importPrivateKeyFragment = (ImportPrivateKeyFragment) pages.get(ImportType.PRIVATE_KEY_FORM_INDEX.ordinal()).second;
-        if (importPrivateKeyFragment == null || newPassword == null) keyImportError(getString(R.string.import_error));
-        else importWalletViewModel.onPrivateKey(importPrivateKeyFragment.getPrivateKey(), newPassword, level);
+        if (requestCode >= SignTransactionDialog.REQUEST_CODE_CONFIRM_DEVICE_CREDENTIALS && requestCode <= SignTransactionDialog.REQUEST_CODE_CONFIRM_DEVICE_CREDENTIALS + 10)
+        {
+            Operation taskCode = Operation.values()[requestCode - SignTransactionDialog.REQUEST_CODE_CONFIRM_DEVICE_CREDENTIALS];
+            if (resultCode == RESULT_OK)
+            {
+                importWalletViewModel.completeAuthentication(taskCode);
+            }
+            else
+            {
+                importWalletViewModel.failedAuthentication(taskCode);
+            }
+        }
     }
 
     private void handleScanQR(int resultCode, Intent data)

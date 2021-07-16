@@ -796,6 +796,31 @@ public class BackupKeyActivity extends BaseActivity implements
         handleBackupWallet.launch(Intent.createChooser(sharingIntent, "Share via"));
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        Operation taskCode = null;
+
+        //Interpret the return code; if it's within the range of values possible to return from PIN confirmation then separate out
+        //the task code from the return value. We have to do it this way because there's no way to send a bundle across the PIN dialog
+        //and out through the PIN dialog's return back to here
+        if (requestCode >= SignTransactionDialog.REQUEST_CODE_CONFIRM_DEVICE_CREDENTIALS && requestCode <= SignTransactionDialog.REQUEST_CODE_CONFIRM_DEVICE_CREDENTIALS + 10) {
+            taskCode = Operation.values()[requestCode - SignTransactionDialog.REQUEST_CODE_CONFIRM_DEVICE_CREDENTIALS];
+            requestCode = SignTransactionDialog.REQUEST_CODE_CONFIRM_DEVICE_CREDENTIALS;
+        }
+
+        switch (requestCode) {
+            case SignTransactionDialog.REQUEST_CODE_CONFIRM_DEVICE_CREDENTIALS:
+                if (resultCode == RESULT_OK) {
+                    viewModel.completeAuthentication(taskCode);
+                } else {
+                    viewModel.failedAuthentication(taskCode);
+                }
+                break;
+        }
+    }
+
     private void AskUserSuccess() {
         hideDialog();
         alertDialog = new AWalletAlertDialog(this);
