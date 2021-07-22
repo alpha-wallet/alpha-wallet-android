@@ -105,7 +105,6 @@ public class GasSettingsActivity extends BaseActivity implements GasSettingsCall
         if (minGasPrice > 0)
         {
             gasSliderView.setupResendSettings(minGasPrice);
-
             FrameLayout resendNote = findViewById(R.id.layout_resend_note);
             resendNote.setVisibility(View.VISIBLE);
         }
@@ -129,7 +128,6 @@ public class GasSettingsActivity extends BaseActivity implements GasSettingsCall
         setupGasSpeeds();
         startGasListener();
     }
-
     private RealmQuery<RealmGasSpread> getGasQuery()
     {
         return viewModel.getTickerRealm().where(RealmGasSpread.class)
@@ -338,6 +336,17 @@ public class GasSettingsActivity extends BaseActivity implements GasSettingsCall
             }
 
             setCustomGasDetails(position);
+
+            if(minGasPrice > 0)
+            {
+                if(!gs.isCustom && gs.gasPrice.longValue() < minGasPrice)
+                {
+                    ViewGroup.LayoutParams params = holder.itemLayout.getLayoutParams();
+                    params.height = 0;
+                    holder.itemLayout.setLayoutParams(params);
+                    holder.itemLayout.requestLayout();
+                }
+            }
 
             //determine if this amount can be used
             BigDecimal txCost = gasFee.add(sendAmount);
