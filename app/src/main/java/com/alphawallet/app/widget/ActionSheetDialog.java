@@ -296,7 +296,7 @@ public class ActionSheetDialog extends BottomSheetDialog implements StandardFunc
             {
                 actionCompleted = true;
                 //display success and hand back to calling function
-                confirmationWidget.startProgressCycle(1);
+                if (gotAuth) confirmationWidget.startProgressCycle(1);
                 signCallback.gotAuthorisation(gotAuth);
             }
 
@@ -486,6 +486,7 @@ public class ActionSheetDialog extends BottomSheetDialog implements StandardFunc
             public void gotAuthorisation(boolean gotAuth)
             {
                 actionCompleted = true;
+                if (!gotAuth) { cancelAuthentication(); return; }
                 confirmationWidget.startProgressCycle(4);
                 //send the transaction
                 actionSheetCallback.sendTransaction(formTransaction());
