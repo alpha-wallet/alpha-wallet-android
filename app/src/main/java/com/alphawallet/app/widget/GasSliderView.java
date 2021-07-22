@@ -269,7 +269,7 @@ public class GasSliderView extends RelativeLayout
 
     public long getNonce()
     {
-            String nonce = nonceValue.getText().toString();
+        String nonce = nonceValue.getText().toString();
         if (!TextUtils.isEmpty(nonce) && TextUtils.isDigitsOnly(nonce))
         {
             return Long.parseLong(nonce);

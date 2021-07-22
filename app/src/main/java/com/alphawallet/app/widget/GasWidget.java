@@ -38,7 +38,6 @@ import io.realm.Sort;
 import static com.alphawallet.app.C.DEFAULT_GAS_PRICE;
 import static com.alphawallet.app.C.GAS_LIMIT_MIN;
 import static com.alphawallet.ethereum.EthereumNetworkBase.MAINNET_ID;
-import static java.lang.Math.ceil;
 
 /**
  * Created by JB on 19/11/2020.
