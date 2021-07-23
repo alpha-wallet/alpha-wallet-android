@@ -83,6 +83,7 @@ public class GasSettingsActivity extends BaseActivity implements GasSettingsCall
     private long minGasPrice;
 
     private int customIndex = -1;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         AndroidInjection.inject(this);
@@ -101,6 +102,7 @@ public class GasSettingsActivity extends BaseActivity implements GasSettingsCall
 
         viewModel = new ViewModelProvider(this, viewModelFactory)
                 .get(GasSettingsViewModel.class);
+
         minGasPrice = getIntent().getLongExtra(C.EXTRA_MIN_GAS_PRICE, -1);
         if (minGasPrice > 0)
         {
@@ -108,6 +110,7 @@ public class GasSettingsActivity extends BaseActivity implements GasSettingsCall
             FrameLayout resendNote = findViewById(R.id.layout_resend_note);
             resendNote.setVisibility(View.VISIBLE);
         }
+
         currentGasSpeedIndex = getIntent().getIntExtra(C.EXTRA_SINGLE_ITEM, -1);
         chainId = getIntent().getIntExtra(C.EXTRA_CHAIN_ID, MAINNET_ID);
         customGasLimit = new BigDecimal(getIntent().getStringExtra(C.EXTRA_CUSTOM_GAS_LIMIT));
@@ -128,6 +131,7 @@ public class GasSettingsActivity extends BaseActivity implements GasSettingsCall
         setupGasSpeeds();
         startGasListener();
     }
+
     private RealmQuery<RealmGasSpread> getGasQuery()
     {
         return viewModel.getTickerRealm().where(RealmGasSpread.class)

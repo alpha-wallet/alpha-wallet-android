@@ -93,7 +93,8 @@ public class TransactionDetailViewModel extends BaseViewModel {
             KeyService keyService,
             GasService2 gasService,
             CreateTransactionInteract createTransactionInteract,
-            AnalyticsServiceType analyticsService) {
+            AnalyticsServiceType analyticsService)
+    {
         this.networkInteract = findDefaultNetworkInteract;
         this.externalBrowserRouter = externalBrowserRouter;
         this.tokenService = tokenService;
@@ -152,7 +153,8 @@ public class TransactionDetailViewModel extends BaseViewModel {
         }
     }
 
-    public void shareTransactionDetail(Context context, Transaction transaction) {
+    public void shareTransactionDetail(Context context, Transaction transaction)
+    {
         Uri shareUri = buildEtherscanUri(transaction);
         if (shareUri != null) {
             Intent sharingIntent = new Intent(Intent.ACTION_SEND);
@@ -169,7 +171,8 @@ public class TransactionDetailViewModel extends BaseViewModel {
     }
 
     @Nullable
-    private Uri buildEtherscanUri(Transaction transaction) {
+    private Uri buildEtherscanUri(Transaction transaction)
+    {
         NetworkInfo networkInfo = networkInteract.getNetworkInfo(transaction.chainId);
         if (networkInfo != null) {
             return networkInfo.getEtherscanUri(transaction.hash);
@@ -276,30 +279,13 @@ public class TransactionDetailViewModel extends BaseViewModel {
         return tokenService;
     }
 
-//    private void onCreateTransaction(String transaction) {
-//        progress.postValue(false);
-//        newTransaction.postValue(transaction);
-//    }
-
-
-//    public void sendOverrideTransaction(String transactionHex, String to, BigInteger nonce, BigInteger gasPrice, BigInteger gasLimit, BigInteger value, int chainId)
-//    {
-//        byte[] data = Numeric.hexStringToByteArray(transactionHex);
-//        disposable = createTransactionInteract
-//                .resend(defaultWallet.getValue(), nonce, to, value, gasPrice, gasLimit, data, chainId)
-//                .subscribe(this::onCreateTransaction,
-//                        this::onError);
-//    }
-
     public BigInteger calculateMinGasPrice(BigInteger oldGasPrice)
     {
-
         BigInteger candidateGasOverridePrice = new BigDecimal(oldGasPrice).multiply(BigDecimal.valueOf(1.1)).setScale(0, RoundingMode.CEILING).toBigInteger();
         BigInteger checkGasPrice = oldGasPrice.add(BalanceUtils.gweiToWei(BigDecimal.valueOf(2)));
 
         return checkGasPrice.max(candidateGasOverridePrice); //highest price between adding 2 gwei or 10%
     }
-
 
     public void getAuthentication(Activity activity, Wallet wallet, SignAuthenticationCallback callback)
     {
@@ -329,5 +315,4 @@ public class TransactionDetailViewModel extends BaseViewModel {
 
         analyticsService.track(C.AN_CALL_ACTIONSHEET, analyticsProperties);
     }
-
 }

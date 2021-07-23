@@ -75,7 +75,6 @@ public class TransactionDetailActivity extends BaseActivity implements StandardF
                 .get(TransactionDetailViewModel.class);
         viewModel.latestBlock().observe(this, this::onLatestBlock);
         viewModel.onTransaction().observe(this, this::onTransaction);
-
         viewModel.transactionFinalised().observe(this, this::txWritten);
         viewModel.transactionError().observe(this, this::txError);
 
@@ -310,7 +309,8 @@ public class TransactionDetailActivity extends BaseActivity implements StandardF
      * Called to check if we're ready to send user to confirm screen / activity sheet popup
      *
      */
-    private void checkConfirm(boolean isCancelling) {
+    private void checkConfirm(boolean isCancelling)
+    {
 
         BigInteger minGasPrice = viewModel.calculateMinGasPrice(new BigInteger(transaction.gasPrice));
 
@@ -347,7 +347,10 @@ public class TransactionDetailActivity extends BaseActivity implements StandardF
         }
         else if (requestCode >= SignTransactionDialog.REQUEST_CODE_CONFIRM_DEVICE_CREDENTIALS && requestCode <= SignTransactionDialog.REQUEST_CODE_CONFIRM_DEVICE_CREDENTIALS + 10)
         {
-            if (confirmationDialog != null && confirmationDialog.isShowing()) confirmationDialog.completeSignRequest(resultCode == RESULT_OK);
+            if (confirmationDialog != null && confirmationDialog.isShowing())
+            {
+                confirmationDialog.completeSignRequest(resultCode == RESULT_OK);
+            }
         }
         else
         {

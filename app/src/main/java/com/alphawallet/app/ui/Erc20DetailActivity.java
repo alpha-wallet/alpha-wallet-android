@@ -156,6 +156,8 @@ public class Erc20DetailActivity extends BaseActivity implements StandardFunctio
         tokenMeta = new TokenCardMeta(token);
     }
 
+    dfgdfg
+
     private void setTokenListener()
     {
         if (realm == null) realm = viewModel.getRealmInstance(wallet);
