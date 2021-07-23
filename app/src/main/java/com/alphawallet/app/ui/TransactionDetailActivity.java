@@ -369,16 +369,17 @@ public class TransactionDetailActivity extends BaseActivity implements StandardF
     @Override
     public void sendTransaction(Web3Transaction finalTx)
     {
-        viewModel.sendTransaction(finalTx, wallet, token.tokenInfo.chainId);
+        viewModel.sendTransaction(finalTx, wallet, token.tokenInfo.chainId, transaction.hash); //return point is txWritten
     }
 
     @Override
     public void dismissed(String txHash, long callbackId, boolean actionCompleted)
     {
         //ActionSheet was dismissed
-        if (!TextUtils.isEmpty(txHash)) {
+        if (!TextUtils.isEmpty(txHash))
+        {
             Intent intent = new Intent();
-            intent.putExtra("tx_hash", txHash);
+            intent.putExtra(C.EXTRA_TXHASH, txHash);
             setResult(RESULT_OK, intent);
             finish();
         }
@@ -390,6 +391,8 @@ public class TransactionDetailActivity extends BaseActivity implements StandardF
     private void txWritten(TransactionData transactionData)
     {
         confirmationDialog.transactionWritten(transactionData.txHash);
+        //reset display to show new transaction (load transaction from database)
+        viewModel.fetchTransaction(wallet, transactionData.txHash, transaction.chainId);
     }
 
     //Transaction failed to be sent
@@ -407,5 +410,4 @@ public class TransactionDetailActivity extends BaseActivity implements StandardF
         dialog.show();
         confirmationDialog.dismiss();
     }
-
 }

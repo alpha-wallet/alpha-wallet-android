@@ -1,5 +1,7 @@
 package com.alphawallet.app.ui;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.TextUtils;
@@ -11,6 +13,10 @@ import android.webkit.WebView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -48,6 +54,8 @@ import com.alphawallet.token.entity.TSTokenView;
 import com.alphawallet.token.entity.TokenScriptResult;
 import com.alphawallet.token.tools.Numeric;
 import com.alphawallet.token.tools.TokenDefinition;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -113,10 +121,20 @@ public class TokenActivity extends BaseActivity implements PageReadyCallback, St
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_token_activity);
 
-        eventKey = getIntent().getStringExtra(C.EXTRA_ACTION_NAME);
-        transactionHash = getIntent().getStringExtra(C.EXTRA_TXHASH);
-        isFromTokenHistory = getIntent().getBooleanExtra(C.EXTRA_STATE, false);
-        transferData = getIntent().getParcelableExtra(C.EXTRA_TOKEN_ID);
+        if (savedInstanceState != null && savedInstanceState.containsKey(C.EXTRA_ACTION_NAME))
+        {
+            eventKey = savedInstanceState.getString(C.EXTRA_ACTION_NAME);
+            transactionHash = savedInstanceState.getString(C.EXTRA_TXHASH);
+            isFromTokenHistory = savedInstanceState.getBoolean(C.EXTRA_STATE, false);
+            transferData = savedInstanceState.getParcelable(C.EXTRA_TOKEN_ID);
+        }
+        else
+        {
+            eventKey = getIntent().getStringExtra(C.EXTRA_ACTION_NAME);
+            transactionHash = getIntent().getStringExtra(C.EXTRA_TXHASH);
+            isFromTokenHistory = getIntent().getBooleanExtra(C.EXTRA_STATE, false);
+            transferData = getIntent().getParcelableExtra(C.EXTRA_TOKEN_ID);
+        }
         //TODO: Send event details
         icon = findViewById(R.id.token_icon);
 
@@ -164,11 +182,28 @@ public class TokenActivity extends BaseActivity implements PageReadyCallback, St
         return super.onCreateOptionsMenu(menu);
     }
 
+    ActivityResultLauncher<Intent> txDetailPage = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+            new ActivityResultCallback<ActivityResult>() {
+                @Override
+                public void onActivityResult(ActivityResult result) {
+                    if (result.getData() != null && result.getData().hasExtra(C.EXTRA_TXHASH))
+                    {
+                        transactionHash = result.getData().getStringExtra(C.EXTRA_TXHASH);
+                        //onResume will be called by OS and the transaction will reset
+                    }
+                }
+            });
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.action_view_transaction_details)
         {
-            viewModel.showTransactionDetail(this, transactionHash, token.tokenInfo.chainId);
+            Intent intent = new Intent(this, TransactionDetailActivity.class);
+            intent.putExtra(C.EXTRA_TXHASH, transactionHash);
+            intent.putExtra(C.EXTRA_CHAIN_ID, token.tokenInfo.chainId);
+            intent.putExtra(C.Key.WALLET, viewModel.getWallet());
+            intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
+            txDetailPage.launch(intent);
         }
         return super.onOptionsItemSelected(item);
     }
@@ -577,6 +612,16 @@ public class TokenActivity extends BaseActivity implements PageReadyCallback, St
     public void callToJSComplete(String function, String result)
     {
 
+    }
+
+    @Override
+    public void onSaveInstanceState(@NotNull Bundle outState)
+    {
+        super.onSaveInstanceState(outState);
+        outState.putString(C.EXTRA_ACTION_NAME, eventKey);
+        outState.putString(C.EXTRA_TXHASH, transactionHash);
+        outState.putBoolean(C.EXTRA_STATE, isFromTokenHistory);
+        outState.putParcelable(C.EXTRA_TOKEN_ID, transferData);
     }
 
     @Override

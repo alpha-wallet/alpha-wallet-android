@@ -44,6 +44,7 @@ import java.math.RoundingMode;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
@@ -64,11 +65,9 @@ public class TransactionDetailViewModel extends BaseViewModel {
     private final GasService2 gasService;
     private final AnalyticsServiceType analyticsService;
 
-    private final MutableLiveData<String> newTransaction = new MutableLiveData<>();
     private final MutableLiveData<BigInteger> latestBlock = new MutableLiveData<>();
     private final MutableLiveData<Transaction> latestTx = new MutableLiveData<>();
     private final MutableLiveData<Transaction> transaction = new MutableLiveData<>();
-    private final MutableLiveData<Wallet> defaultWallet = new MutableLiveData<>();
     private final MutableLiveData<TransactionData> transactionFinalised = new MutableLiveData<>();
     private final MutableLiveData<Throwable> transactionError = new MutableLiveData<>();
 
@@ -200,7 +199,6 @@ public class TransactionDetailViewModel extends BaseViewModel {
         if (currentBlockUpdateDisposable != null && !currentBlockUpdateDisposable.isDisposed()) currentBlockUpdateDisposable.dispose();
     }
 
-
     public void fetchTransaction(Wallet wallet, String txHash, int chainId)
     {
         Transaction tx = fetchTransactionsInteract.fetchCached(wallet.address, txHash);
@@ -268,7 +266,6 @@ public class TransactionDetailViewModel extends BaseViewModel {
         gasService.stopGasPriceCycle();
     }
 
-
     public void restartServices()
     {
         fetchTransactionsInteract.restartTransactionService();
@@ -279,20 +276,20 @@ public class TransactionDetailViewModel extends BaseViewModel {
         return tokenService;
     }
 
-    private void onCreateTransaction(String transaction) {
-        progress.postValue(false);
-        newTransaction.postValue(transaction);
-    }
+//    private void onCreateTransaction(String transaction) {
+//        progress.postValue(false);
+//        newTransaction.postValue(transaction);
+//    }
 
 
-    public void sendOverrideTransaction(String transactionHex, String to, BigInteger nonce, BigInteger gasPrice, BigInteger gasLimit, BigInteger value, int chainId)
-    {
-        byte[] data = Numeric.hexStringToByteArray(transactionHex);
-        disposable = createTransactionInteract
-                .resend(defaultWallet.getValue(), nonce, to, value, gasPrice, gasLimit, data, chainId)
-                .subscribe(this::onCreateTransaction,
-                        this::onError);
-    }
+//    public void sendOverrideTransaction(String transactionHex, String to, BigInteger nonce, BigInteger gasPrice, BigInteger gasLimit, BigInteger value, int chainId)
+//    {
+//        byte[] data = Numeric.hexStringToByteArray(transactionHex);
+//        disposable = createTransactionInteract
+//                .resend(defaultWallet.getValue(), nonce, to, value, gasPrice, gasLimit, data, chainId)
+//                .subscribe(this::onCreateTransaction,
+//                        this::onError);
+//    }
 
     public BigInteger calculateMinGasPrice(BigInteger oldGasPrice)
     {
@@ -309,13 +306,22 @@ public class TransactionDetailViewModel extends BaseViewModel {
         keyService.getAuthenticationForSignature(wallet, activity, callback);
     }
 
-    public void sendTransaction(Web3Transaction finalTx, Wallet wallet, int chainId)
+    public void sendTransaction(Web3Transaction finalTx, Wallet wallet, int chainId, String overridenTxHash)
     {
         disposable = createTransactionInteract
                 .createWithSig(wallet, finalTx, chainId)
-                .subscribe(transactionFinalised::postValue,
+                .subscribe(txData -> processTransaction(txData, wallet, overridenTxHash),
                         transactionError::postValue);
     }
+
+    public void processTransaction(TransactionData txData, Wallet wallet, String overridenTxHash)
+    {
+        //remove old tx from database
+        fetchTransactionsInteract.removeOverridenTransaction(wallet, overridenTxHash);
+        //update Activity
+        transactionFinalised.postValue(txData);
+    }
+
     public void actionSheetConfirm(String mode)
     {
         AnalyticsProperties analyticsProperties = new AnalyticsProperties();

@@ -206,17 +206,17 @@ public class ActionSheetDialog extends BottomSheetDialog implements StandardFunc
     private boolean isSendingTransaction()
     {
         return (mode == ActionSheetMode.SEND_TRANSACTION || mode == ActionSheetMode.SEND_TRANSACTION_DAPP || mode == ActionSheetMode.SEND_TRANSACTION_WC
-         || mode == ActionSheetMode.SIGN_TRANSACTION);
+         || mode == ActionSheetMode.SIGN_TRANSACTION || mode == ActionSheetMode.SPEEDUP_OR_CANCEL_TRANSACTION);
     }
 
     public void setupResendTransaction(boolean cancel)
     {
+        mode = ActionSheetMode.SPEEDUP_OR_CANCEL_TRANSACTION;
         gasWidget.setupResendSettings(cancel, candidateTransaction.gasPrice);
         balanceDisplay.setVisibility(View.GONE);
         addressDetail.setVisibility(View.GONE);
         detailWidget.setVisibility(View.GONE);
         amountDisplay.setVisibility(View.GONE);
-
     }
 
     @Override
@@ -234,6 +234,7 @@ public class ActionSheetDialog extends BottomSheetDialog implements StandardFunc
             case SEND_TRANSACTION_WC:
             case SEND_TRANSACTION:
             case SEND_TRANSACTION_DAPP:
+            case SPEEDUP_OR_CANCEL_TRANSACTION:
                 //check gas and warn user
                 if (!gasWidget.checkSufficientGas())
                 {
@@ -359,11 +360,9 @@ public class ActionSheetDialog extends BottomSheetDialog implements StandardFunc
 
             case SEND_TRANSACTION_WC:
             case SEND_TRANSACTION_DAPP:
-                //return to dapp
-                dismiss();
-                break;
-
+            case SPEEDUP_OR_CANCEL_TRANSACTION:
             case SIGN_TRANSACTION:
+                //return to dapp
                 dismiss();
                 break;
         }
@@ -441,6 +440,8 @@ public class ActionSheetDialog extends BottomSheetDialog implements StandardFunc
                 case SEND_TRANSACTION_WC:
                 case SEND_TRANSACTION:
                 case SEND_TRANSACTION_DAPP:
+                case SPEEDUP_OR_CANCEL_TRANSACTION:
+                case SIGN_TRANSACTION:
                     signCallback.gotAuthorisation(gotAuth);
                     break;
 
@@ -448,10 +449,6 @@ public class ActionSheetDialog extends BottomSheetDialog implements StandardFunc
                     actionCompleted = true;
                     //display success and hand back to calling function
                     confirmationWidget.startProgressCycle(1);
-                    signCallback.gotAuthorisation(gotAuth);
-                    break;
-
-                case SIGN_TRANSACTION:
                     signCallback.gotAuthorisation(gotAuth);
                     break;
             }
