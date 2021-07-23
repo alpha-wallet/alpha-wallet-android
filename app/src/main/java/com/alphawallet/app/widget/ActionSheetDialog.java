@@ -216,7 +216,6 @@ public class ActionSheetDialog extends BottomSheetDialog implements StandardFunc
         addressDetail.setVisibility(View.GONE);
         detailWidget.setVisibility(View.GONE);
         amountDisplay.setVisibility(View.GONE);
-
     }
 
     @Override

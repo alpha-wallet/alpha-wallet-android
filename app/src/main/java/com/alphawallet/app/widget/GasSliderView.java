@@ -49,6 +49,7 @@ public class GasSliderView extends RelativeLayout
         inflate(context, R.layout.item_gas_slider, this);
 
         calculateStaticScaleFactor();
+
         gasPriceSlider = findViewById(R.id.gas_price_slider);
         gasLimitSlider = findViewById(R.id.gas_limit_slider);
         gasLimitValue = findViewById(R.id.gas_limit_entry);
