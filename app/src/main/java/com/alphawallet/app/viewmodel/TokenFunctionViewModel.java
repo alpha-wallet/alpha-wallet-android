@@ -479,6 +479,11 @@ public class TokenFunctionViewModel extends BaseViewModel
         return wallet.type != WalletType.WATCH;
     }
 
+    public Wallet getWallet()
+    {
+        return wallet;
+    }
+
     public Realm getRealmInstance(Wallet w)
     {
         return tokensService.getRealmInstance(w);
@@ -492,16 +497,6 @@ public class TokenFunctionViewModel extends BaseViewModel
     public FetchTransactionsInteract getTransactionsInteract()
     {
         return fetchTransactionsInteract;
-    }
-
-    public void showTransactionDetail(Context ctx, String txHash, int chainId)
-    {
-        Intent intent = new Intent(ctx, TransactionDetailActivity.class);
-        intent.putExtra(C.EXTRA_TXHASH, txHash);
-        intent.putExtra(C.EXTRA_CHAIN_ID, chainId);
-        intent.putExtra(C.Key.WALLET, wallet);
-        intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
-        ctx.startActivity(intent);
     }
 
     public Transaction fetchTransaction(String txHash)
