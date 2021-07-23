@@ -535,8 +535,7 @@ public class ConfirmationActivity extends BaseActivity implements SignAuthentica
         }
     }
 
-    private void onDefaultWallet(Wallet wallet)
-    {
+    private void onDefaultWallet(Wallet wallet) {
         fromAddressText.setText(wallet.address);
         sendingWallet = wallet;
 

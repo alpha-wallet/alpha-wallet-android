@@ -83,6 +83,7 @@ public class GasWidget extends LinearLayout implements Runnable
         timeEstimate = findViewById(R.id.text_time_estimate);
         gasWarning = findViewById(R.id.layout_gas_warning);
         speedWarning = findViewById(R.id.layout_speed_warning);
+
         gasSpeeds = new ArrayList<>();
 
         setOnClickListener(v -> {
@@ -203,7 +204,6 @@ public class GasWidget extends LinearLayout implements Runnable
      * @param expectedTxTime
      * @param nonce
      */
-
     public void setCurrentGasIndex(int gasSelectionIndex, BigDecimal customGasPrice, BigDecimal customGasLimit, long expectedTxTime, long nonce)
     {
         currentGasSpeedIndex = gasSelectionIndex;

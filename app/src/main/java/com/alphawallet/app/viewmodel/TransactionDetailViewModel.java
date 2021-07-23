@@ -94,7 +94,8 @@ public class TransactionDetailViewModel extends BaseViewModel {
             KeyService keyService,
             GasService2 gasService,
             CreateTransactionInteract createTransactionInteract,
-            AnalyticsServiceType analyticsService) {
+            AnalyticsServiceType analyticsService)
+    {
         this.networkInteract = findDefaultNetworkInteract;
         this.externalBrowserRouter = externalBrowserRouter;
         this.tokenService = tokenService;
@@ -153,7 +154,8 @@ public class TransactionDetailViewModel extends BaseViewModel {
         }
     }
 
-    public void shareTransactionDetail(Context context, Transaction transaction) {
+    public void shareTransactionDetail(Context context, Transaction transaction)
+    {
         Uri shareUri = buildEtherscanUri(transaction);
         if (shareUri != null) {
             Intent sharingIntent = new Intent(Intent.ACTION_SEND);
@@ -170,7 +172,8 @@ public class TransactionDetailViewModel extends BaseViewModel {
     }
 
     @Nullable
-    private Uri buildEtherscanUri(Transaction transaction) {
+    private Uri buildEtherscanUri(Transaction transaction)
+    {
         NetworkInfo networkInfo = networkInteract.getNetworkInfo(transaction.chainId);
         if (networkInfo != null) {
             return networkInfo.getEtherscanUri(transaction.hash);
@@ -284,7 +287,6 @@ public class TransactionDetailViewModel extends BaseViewModel {
         newTransaction.postValue(transaction);
     }
 
-
     public void sendOverrideTransaction(String transactionHex, String to, BigInteger nonce, BigInteger gasPrice, BigInteger gasLimit, BigInteger value, int chainId)
     {
         byte[] data = Numeric.hexStringToByteArray(transactionHex);
@@ -303,7 +305,6 @@ public class TransactionDetailViewModel extends BaseViewModel {
         return checkGasPrice.max(candidateGasOverridePrice); //highest price between adding 2 gwei or 10%
     }
 
-
     public void getAuthentication(Activity activity, Wallet wallet, SignAuthenticationCallback callback)
     {
         keyService.getAuthenticationForSignature(wallet, activity, callback);
@@ -316,6 +317,7 @@ public class TransactionDetailViewModel extends BaseViewModel {
                 .subscribe(transactionFinalised::postValue,
                         transactionError::postValue);
     }
+
     public void actionSheetConfirm(String mode)
     {
         AnalyticsProperties analyticsProperties = new AnalyticsProperties();
@@ -323,5 +325,4 @@ public class TransactionDetailViewModel extends BaseViewModel {
 
         analyticsService.track(C.AN_CALL_ACTIONSHEET, analyticsProperties);
     }
-
 }
